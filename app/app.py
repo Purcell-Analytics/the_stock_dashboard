@@ -22,7 +22,7 @@ def index() -> rx.Component:
                             skeleton_loader(),
                             skeleton_loader(),
                             skeleton_loader(),
-                            class_name="bg-white rounded-lg border border-gray-200 overflow-hidden shadow-[0px_1px_3px_rgba(0,0,0,0.12)]",
+                            class_name="bg-[#151b28] rounded-lg border border-slate-800 overflow-hidden",
                         ),
                         rx.cond(
                             StockState.error_message,
@@ -33,13 +33,13 @@ def index() -> rx.Component:
                                 ),
                                 rx.el.p(
                                     "An error occurred",
-                                    class_name="font-bold text-lg text-gray-700",
+                                    class_name="font-bold text-lg text-slate-300",
                                 ),
                                 rx.el.p(
                                     StockState.error_message,
-                                    class_name="text-sm text-gray-500",
+                                    class_name="text-sm text-slate-500",
                                 ),
-                                class_name="flex flex-col items-center justify-center p-8 bg-yellow-50 rounded-lg border border-yellow-200",
+                                class_name="flex flex-col items-center justify-center p-8 bg-yellow-900/20 rounded-lg border border-yellow-700/50",
                             ),
                             rx.cond(
                                 StockState.stocks.length() > 0,
@@ -56,7 +56,7 @@ def index() -> rx.Component:
             on_mount=StockState.fetch_stocks,
             class_name="flex-1 flex flex-col h-screen overflow-y-auto",
         ),
-        class_name="flex bg-gray-50 font-['Inter']",
+        class_name="flex bg-[#0a0f1a] text-slate-200 font-['Inter']",
     )
 
 

@@ -84,9 +84,7 @@ class StockState(rx.State):
                     self.error_message = "Supabase client not available."
                     self.is_loading = False
                 return
-            response = (
-                await client.table("stocks").select("*").order("symbol").execute()
-            )
+            response = client.table("stocks").select("*").order("symbol").execute()
             async with self:
                 if response.data:
                     self.stocks = response.data
@@ -122,19 +120,15 @@ class StockState(rx.State):
                     self.error_message = "Supabase client not available."
                     self.is_loading = False
                 return
-            await (
-                client.table("stocks")
-                .insert(
-                    {
-                        "symbol": symbol,
-                        "name": name,
-                        "price": price,
-                        "change": change,
-                        "volume": volume,
-                    }
-                )
-                .execute()
-            )
+            client.table("stocks").insert(
+                {
+                    "symbol": symbol,
+                    "name": name,
+                    "price": price,
+                    "change": change,
+                    "volume": volume,
+                }
+            ).execute()
             async with self:
                 self.show_add_stock_dialog = False
             yield rx.toast(f"Successfully added {symbol}.", duration=3000)
@@ -157,7 +151,7 @@ class StockState(rx.State):
                     self.error_message = "Supabase client not available."
                     self.is_loading = False
                 return
-            await client.table("stocks").delete().eq("id", stock_id).execute()
+            client.table("stocks").delete().eq("id", stock_id).execute()
             yield rx.toast("Stock deleted successfully.", duration=3000)
             yield StockState.fetch_stocks
         except Exception as e:

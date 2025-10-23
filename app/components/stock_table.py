@@ -6,14 +6,14 @@ def stock_row(stock: Stock) -> rx.Component:
     return rx.el.tr(
         rx.el.td(
             rx.el.div(
-                rx.el.p(stock["symbol"], class_name="font-bold text-gray-900"),
-                rx.el.p(stock["name"], class_name="text-gray-500 text-xs"),
+                rx.el.p(stock["symbol"], class_name="font-bold text-slate-100"),
+                rx.el.p(stock["name"], class_name="text-slate-400 text-xs"),
                 class_name="pl-6 py-3",
             )
         ),
         rx.el.td(
             f"${stock['price'].to_string()}",
-            class_name="text-sm font-medium text-gray-800 text-right",
+            class_name="text-sm font-medium text-slate-200 text-right",
         ),
         rx.el.td(
             rx.el.span(
@@ -23,23 +23,23 @@ def stock_row(stock: Stock) -> rx.Component:
                     stock["change"].to_string(),
                 ),
                 class_name=rx.cond(
-                    stock["change"] >= 0, "text-green-600", "text-red-600"
+                    stock["change"] >= 0, "text-green-400", "text-red-400"
                 ),
             ),
             class_name="text-sm font-medium text-right",
         ),
         rx.el.td(
-            stock["volume"].to_string(), class_name="text-sm text-gray-600 text-right"
+            stock["volume"].to_string(), class_name="text-sm text-slate-300 text-right"
         ),
         rx.el.td(
             rx.el.button(
                 rx.icon("trash-2", class_name="h-4 w-4"),
                 on_click=lambda: StockState.delete_stock(stock["id"]),
-                class_name="text-gray-400 hover:text-red-600 p-2 rounded-md",
+                class_name="text-slate-500 hover:text-cyan-400 p-2 rounded-md",
             ),
             class_name="pr-6 py-3 text-right",
         ),
-        class_name="border-b border-gray-200 hover:bg-gray-50/50 transition-colors",
+        class_name="border-b border-slate-800 hover:bg-slate-800/50 transition-colors",
     )
 
 
@@ -50,50 +50,50 @@ def stock_table() -> rx.Component:
                 rx.el.tr(
                     rx.el.th(
                         "Stock",
-                        class_name="text-left font-semibold text-gray-600 uppercase text-xs tracking-wider pl-6 py-3",
+                        class_name="text-left font-semibold text-slate-400 uppercase text-xs tracking-wider pl-6 py-3",
                     ),
                     rx.el.th(
                         "Price",
-                        class_name="text-right font-semibold text-gray-600 uppercase text-xs tracking-wider",
+                        class_name="text-right font-semibold text-slate-400 uppercase text-xs tracking-wider",
                     ),
                     rx.el.th(
                         "Change",
-                        class_name="text-right font-semibold text-gray-600 uppercase text-xs tracking-wider",
+                        class_name="text-right font-semibold text-slate-400 uppercase text-xs tracking-wider",
                     ),
                     rx.el.th(
                         "Volume",
-                        class_name="text-right font-semibold text-gray-600 uppercase text-xs tracking-wider",
+                        class_name="text-right font-semibold text-slate-400 uppercase text-xs tracking-wider",
                     ),
                     rx.el.th("", class_name="pr-6 py-3"),
-                    class_name="bg-gray-50",
+                    class_name="bg-slate-800/50",
                 )
             ),
             rx.el.tbody(rx.foreach(StockState.filtered_stocks, stock_row)),
             class_name="w-full",
         ),
-        class_name="bg-white rounded-lg border border-gray-200 overflow-hidden shadow-[0px_1px_3px_rgba(0,0,0,0.12)]",
+        class_name="bg-[#151b28] rounded-lg border border-slate-800 overflow-hidden",
     )
 
 
 def skeleton_loader() -> rx.Component:
     return rx.el.div(
         rx.el.div(
-            rx.el.div(class_name="h-4 bg-gray-200 rounded w-1/4"),
-            rx.el.div(class_name="h-3 bg-gray-200 rounded w-1/2 mt-1"),
+            rx.el.div(class_name="h-4 bg-slate-700 rounded w-1/4"),
+            rx.el.div(class_name="h-3 bg-slate-700 rounded w-1/2 mt-1"),
             class_name="pl-6 py-3",
         ),
-        class_name="animate-pulse flex items-center h-16 border-b border-gray-200",
+        class_name="animate-pulse flex items-center h-16 border-b border-slate-800",
     )
 
 
 def empty_state() -> rx.Component:
     return rx.el.div(
-        rx.icon("inbox", class_name="h-12 w-12 text-gray-400"),
+        rx.icon("inbox", class_name="h-12 w-12 text-slate-500"),
         rx.el.h3(
-            "No stocks found", class_name="mt-4 text-lg font-semibold text-gray-800"
+            "No stocks found", class_name="mt-4 text-lg font-semibold text-slate-200"
         ),
         rx.el.p(
-            "Add a new stock to get started.", class_name="mt-1 text-sm text-gray-500"
+            "Add a new stock to get started.", class_name="mt-1 text-sm text-slate-400"
         ),
-        class_name="flex flex-col items-center justify-center text-center p-12 bg-white rounded-lg border border-gray-200 shadow-sm",
+        class_name="flex flex-col items-center justify-center text-center p-12 bg-[#151b28] rounded-lg border border-slate-800",
     )
