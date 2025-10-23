@@ -12,6 +12,7 @@ class Stock(TypedDict):
     change: float
     volume: int
     last_updated: str
+    is_watchlist: bool
 
 
 class StockState(rx.State):
@@ -158,5 +159,27 @@ class StockState(rx.State):
             logging.exception(f"Error deleting stock: {e}")
             async with self:
                 self.error_message = f"Failed to delete stock: {e}"
+                self.is_loading = False
+                yield rx.toast(self.error_message, duration=5000)
+
+    @rx.event(background=True)
+    async def toggle_watchlist(self, stock_id: int, is_watchlist: bool):
+        async with self:
+            self.is_loading = True
+        try:
+            client = get_supabase_client()
+            if not client:
+                async with self:
+                    self.error_message = "Supabase client not available."
+                    self.is_loading = False
+                return
+            client.table("stocks").update({"is_watchlist": not is_watchlist}).eq(
+                "id", stock_id
+            ).execute()
+            yield StockState.fetch_stocks
+        except Exception as e:
+            logging.exception(f"Error updating watchlist: {e}")
+            async with self:
+                self.error_message = f"Failed to update watchlist: {e}"
                 self.is_loading = False
                 yield rx.toast(self.error_message, duration=5000)

@@ -1,5 +1,6 @@
 import reflex as rx
 from app.states.stock_state import Stock, StockState
+from app.states.watchlist_state import WatchlistState
 
 
 def stock_row(stock: Stock) -> rx.Component:
@@ -32,10 +33,27 @@ def stock_row(stock: Stock) -> rx.Component:
             stock["volume"].to_string(), class_name="text-sm text-slate-300 text-right"
         ),
         rx.el.td(
-            rx.el.button(
-                rx.icon("trash-2", class_name="h-4 w-4"),
-                on_click=lambda: StockState.delete_stock(stock["id"]),
-                class_name="text-slate-500 hover:text-cyan-400 p-2 rounded-md",
+            rx.el.div(
+                rx.el.button(
+                    rx.icon(
+                        "star",
+                        class_name=rx.cond(
+                            stock["is_watchlist"],
+                            "h-4 w-4 text-yellow-400 fill-yellow-400",
+                            "h-4 w-4",
+                        ),
+                    ),
+                    on_click=lambda: StockState.toggle_watchlist(
+                        stock["id"], stock["is_watchlist"]
+                    ),
+                    class_name="text-slate-500 hover:text-yellow-400 p-2 rounded-md",
+                ),
+                rx.el.button(
+                    rx.icon("trash-2", class_name="h-4 w-4"),
+                    on_click=lambda: StockState.delete_stock(stock["id"]),
+                    class_name="text-slate-500 hover:text-cyan-400 p-2 rounded-md",
+                ),
+                class_name="flex justify-end",
             ),
             class_name="pr-6 py-3 text-right",
         ),

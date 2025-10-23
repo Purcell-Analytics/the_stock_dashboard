@@ -1,7 +1,9 @@
 import reflex as rx
+from app.states.stock_state import StockState
 
 
-def nav_item(text: str, icon: str, url: str, is_active: bool) -> rx.Component:
+def nav_item(text: str, icon: str, url: str) -> rx.Component:
+    is_active = StockState.router.page.path == url
     return rx.el.a(
         rx.el.div(
             rx.icon(icon, class_name="w-5 h-5"),
@@ -26,11 +28,11 @@ def sidebar() -> rx.Component:
                 class_name="flex items-center gap-3 px-4 h-16 border-b border-slate-800",
             ),
             rx.el.nav(
-                nav_item("Dashboard", "layout-dashboard", "/", is_active=True),
-                nav_item("Watchlist", "star", "#", is_active=False),
-                nav_item("Settings", "settings", "#", is_active=False),
+                nav_item("Dashboard", "layout-dashboard", "/"),
+                nav_item("Watchlist", "star", "/watchlist"),
+                nav_item("Settings", "settings", "/settings"),
                 class_name="flex-1 p-4 space-y-2",
             ),
         ),
-        class_name="hidden md:flex flex-col w-64 bg-[#0f1419] border-r border-slate-800",
+        class_name="hidden md:flex flex-col w-64 bg-[#0f1419] border-r border-slate-800 h-screen",
     )
