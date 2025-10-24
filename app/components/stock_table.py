@@ -1,6 +1,7 @@
 import reflex as rx
 from app.states.stock_state import Stock, StockState
 from app.states.watchlist_state import WatchlistState
+from app.states.settings_state import SettingsState
 
 
 def stock_row(stock: Stock) -> rx.Component:
@@ -13,7 +14,7 @@ def stock_row(stock: Stock) -> rx.Component:
             )
         ),
         rx.el.td(
-            f"${stock['price'].to_string()}",
+            f"{SettingsState.currency_symbol}{stock['price'].to_string()}",
             class_name="text-sm font-medium text-slate-200 text-right",
         ),
         rx.el.td(

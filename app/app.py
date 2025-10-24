@@ -10,6 +10,7 @@ from app.components.stock_table import (
 from app.components.add_stock_dialog import add_stock_dialog
 from app.states.stock_state import StockState
 from app.states.watchlist_state import WatchlistState
+from app.states.settings_state import SettingsState
 from app.components.metric_cards import metric_card, metric_cards
 
 
@@ -19,10 +20,14 @@ def page_layout(content: rx.Component, title: str) -> rx.Component:
         rx.el.div(
             header(),
             rx.el.main(content, add_stock_dialog(), class_name="p-6"),
-            on_mount=StockState.fetch_stocks,
+            on_mount=SettingsState.on_load,
             class_name="flex-1 flex flex-col h-screen overflow-y-auto",
         ),
-        class_name="flex bg-[#0a0f1a] text-slate-200 font-['Inter']",
+        class_name=rx.cond(
+            SettingsState.preferences.theme == "dark",
+            "flex bg-[#0a0f1a] text-slate-200 font-['Inter']",
+            "flex bg-slate-50 text-slate-800 font-['Inter']",
+        ),
     )
 
 
@@ -149,41 +154,96 @@ def watchlist() -> rx.Component:
     )
 
 
+def settings_card(*children, **props) -> rx.Component:
+    return rx.el.div(
+        *children,
+        class_name=rx.cond(
+            SettingsState.preferences.theme == "dark",
+            "bg-[#151b28] p-6 rounded-lg border border-slate-800 mb-6",
+            "bg-white p-6 rounded-lg border border-slate-200 mb-6",
+        ),
+        **props,
+    )
+
+
 def settings() -> rx.Component:
     return page_layout(
         rx.el.div(
-            rx.el.h2("Settings", class_name="text-xl font-bold text-slate-100 mb-6"),
-            rx.el.div(
-                rx.el.div(
-                    rx.el.h3(
-                        "User Preferences",
-                        class_name="text-lg font-semibold text-slate-200 mb-4 border-b border-slate-700 pb-2",
-                    ),
-                    rx.el.p(
-                        "Theme and notification settings will be here.",
-                        class_name="text-slate-400",
-                    ),
-                    class_name="bg-[#151b28] p-6 rounded-lg border border-slate-800 mb-6",
+            rx.el.h2("Settings", class_name="text-2xl font-bold text-slate-100 mb-6"),
+            settings_card(
+                rx.el.h3(
+                    "User Preferences",
+                    class_name="text-lg font-semibold mb-4 border-b border-slate-700 pb-2",
                 ),
                 rx.el.div(
-                    rx.el.h3(
-                        "Data Management",
-                        class_name="text-lg font-semibold text-slate-200 mb-4 border-b border-slate-700 pb-2",
+                    rx.el.div(
+                        rx.el.label("Theme", class_name="font-medium"),
+                        rx.el.div(
+                            rx.el.button(
+                                rx.icon("sun"),
+                                on_click=lambda: SettingsState.set_theme("light"),
+                                class_name=rx.cond(
+                                    SettingsState.preferences.theme == "light",
+                                    "p-2 rounded-l-md bg-cyan-500 text-white",
+                                    "p-2 rounded-l-md bg-slate-700 hover:bg-slate-600",
+                                ),
+                            ),
+                            rx.el.button(
+                                rx.icon("moon"),
+                                on_click=lambda: SettingsState.set_theme("dark"),
+                                class_name=rx.cond(
+                                    SettingsState.preferences.theme == "dark",
+                                    "p-2 rounded-r-md bg-cyan-500 text-white",
+                                    "p-2 rounded-r-md bg-slate-700 hover:bg-slate-600",
+                                ),
+                            ),
+                            class_name="flex",
+                        ),
+                        class_name="flex items-center justify-between py-3",
                     ),
-                    rx.el.p(
-                        "Data export and clear options will be here.",
-                        class_name="text-slate-400",
+                    rx.el.div(
+                        rx.el.label("Currency", class_name="font-medium"),
+                        rx.el.select(
+                            rx.el.option("USD", value="USD"),
+                            rx.el.option("EUR", value="EUR"),
+                            rx.el.option("GBP", value="GBP"),
+                            value=SettingsState.preferences.currency,
+                            on_change=SettingsState.set_currency,
+                            class_name="bg-slate-700 rounded-md px-2 py-1",
+                        ),
+                        class_name="flex items-center justify-between py-3",
                     ),
-                    class_name="bg-[#151b28] p-6 rounded-lg border border-slate-800 mb-6",
+                    rx.el.div(
+                        rx.el.label("Refresh Interval", class_name="font-medium"),
+                        rx.el.select(
+                            rx.el.option("30 seconds", value="30"),
+                            rx.el.option("1 minute", value="60"),
+                            rx.el.option("5 minutes", value="300"),
+                            rx.el.option("Manual", value="0"),
+                            value=SettingsState.preferences.refresh_interval.to_string(),
+                            on_change=SettingsState.set_refresh_interval,
+                            class_name="bg-slate-700 rounded-md px-2 py-1",
+                        ),
+                        class_name="flex items-center justify-between py-3",
+                    ),
                 ),
-                rx.el.div(
-                    rx.el.h3(
-                        "About",
-                        class_name="text-lg font-semibold text-slate-200 mb-4 border-b border-slate-700 pb-2",
-                    ),
-                    rx.el.p("StockDash v1.0.0", class_name="text-slate-400"),
-                    class_name="bg-[#151b28] p-6 rounded-lg border border-slate-800",
+            ),
+            settings_card(
+                rx.el.h3(
+                    "Data Management",
+                    class_name="text-lg font-semibold mb-4 border-b border-slate-700 pb-2",
                 ),
+                rx.el.p(
+                    "Data export and clear options will be here.",
+                    class_name="text-slate-400",
+                ),
+            ),
+            settings_card(
+                rx.el.h3(
+                    "About",
+                    class_name="text-lg font-semibold mb-4 border-b border-slate-700 pb-2",
+                ),
+                rx.el.p("StockDash v1.0.0", class_name="text-slate-400"),
             ),
         ),
         title="Settings",

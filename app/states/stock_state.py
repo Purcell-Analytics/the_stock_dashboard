@@ -99,6 +99,12 @@ class StockState(rx.State):
                 self.is_loading = False
                 yield rx.toast(self.error_message, duration=5000)
 
+    def _safe_convert(self, value, convert_type):
+        """Safely converts a value to float or int, handling empty strings."""
+        if value == "":
+            return convert_type(0)
+        return convert_type(value)
+
     @rx.event(background=True)
     async def add_stock(self, form_data: dict):
         async with self:
@@ -106,9 +112,9 @@ class StockState(rx.State):
         try:
             symbol = form_data.get("symbol", "").upper()
             name = form_data.get("name", "")
-            price = float(form_data.get("price", 0))
-            change = float(form_data.get("change", 0))
-            volume = int(form_data.get("volume", 0))
+            price = self._safe_convert(form_data.get("price", "0"), float)
+            change = self._safe_convert(form_data.get("change", "0"), float)
+            volume = self._safe_convert(form_data.get("volume", "0"), int)
             if not all([symbol, name]):
                 async with self:
                     self.error_message = "Symbol and Name are required."

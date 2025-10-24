@@ -23,24 +23,33 @@
 - [x] Add active state highlighting based on current route
 - [x] Ensure watchlist metrics display correctly (total watchlist stocks, average change)
 
+## Phase 4: User Preferences and Theme System ✅
+- [x] Create user preferences state management (theme, currency, refresh interval)
+- [x] Implement dark/light theme toggle with persistent storage using browser localStorage
+- [x] Add currency selection (USD, EUR, GBP) with formatting throughout the app
+- [x] Create auto-refresh interval selector (30s, 1m, 5m, manual)
+- [x] Build interactive Settings UI with toggle switches, dropdowns, and radio buttons
+- [x] Apply theme changes dynamically across all pages and components
+
+## Phase 5: Data Management and Export Features
+- [ ] Implement CSV export functionality for all stocks data
+- [ ] Create JSON export option for backup purposes
+- [ ] Add "Clear All Stocks" confirmation dialog with double-check
+- [ ] Implement "Clear Watchlist" to remove all watchlist flags
+- [ ] Create data statistics panel showing record count, last update time, database size
+- [ ] Add import functionality to restore stocks from CSV/JSON files
+
+## Phase 6: Enhanced Settings and User Profile
+- [ ] Create user profile section with customizable display name
+- [ ] Add notification preferences (price alerts, daily summaries)
+- [ ] Implement email notification settings (if Supabase Auth is added)
+- [ ] Create advanced settings: data retention policy, API rate limits display
+- [ ] Add app version, changelog viewer, and "Check for Updates" feature
+- [ ] Build feedback form connected to Supabase (feedback table)
+- [ ] Add keyboard shortcuts reference panel
+
 ---
 
-**Current Status**: ✅ All core features complete!
+**Current Status**: ✅ Phase 4 complete! User preferences with theme, currency, and auto-refresh working perfectly!
 
-**What's Working**:
-- ✅ Full navigation: Dashboard, Watchlist, Settings pages
-- ✅ Watchlist functionality with star icons to add/remove favorites
-- ✅ Watchlist page shows only starred stocks with dedicated metrics
-- ✅ Settings page with organized sections for future expansion
-- ✅ Active sidebar navigation with route highlighting
-- ✅ All CRUD operations connected to Supabase
-- ✅ Search, filter, and metric calculations working perfectly
-
-**Next Steps** (Future enhancements):
-- Add theme toggle in Settings
-- Implement data export functionality
-- Add real-time stock price updates
-- Create charts and visualizations for stock trends
-
-**Important Database Note**: 
-The Supabase 'stocks' table needs the `is_watchlist` column (boolean, default false) for watchlist functionality to work properly.
+**Upcoming**: Phase 5 (Data Management) - Building CSV/JSON export, import, and data clearing features

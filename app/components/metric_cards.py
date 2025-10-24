@@ -1,5 +1,6 @@
 import reflex as rx
 from app.states.stock_state import StockState
+from app.states.settings_state import SettingsState
 
 
 def metric_card(
@@ -70,7 +71,7 @@ def metric_cards() -> rx.Component:
         ),
         metric_card(
             "Average Price",
-            f"${StockState.average_price.to_string()}",
+            f"{SettingsState.currency_symbol}{StockState.average_price.to_string()}",
             "dollar-sign",
             "text-pink-400",
             "border-pink-500",
