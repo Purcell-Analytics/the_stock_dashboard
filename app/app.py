@@ -11,6 +11,7 @@ from app.components.add_stock_dialog import add_stock_dialog
 from app.states.stock_state import StockState
 from app.states.watchlist_state import WatchlistState
 from app.states.settings_state import SettingsState
+from app.states.data_state import DataState
 from app.components.metric_cards import metric_card, metric_cards
 
 
@@ -233,9 +234,108 @@ def settings() -> rx.Component:
                     "Data Management",
                     class_name="text-lg font-semibold mb-4 border-b border-slate-700 pb-2",
                 ),
-                rx.el.p(
-                    "Data export and clear options will be here.",
-                    class_name="text-slate-400",
+                rx.el.div(
+                    rx.el.div(
+                        rx.el.p("Export Data", class_name="font-medium"),
+                        rx.el.div(
+                            rx.el.button(
+                                rx.icon("download", class_name="h-4 w-4 mr-2"),
+                                "Export as CSV",
+                                on_click=DataState.export_data("csv"),
+                                class_name="flex items-center text-sm px-3 py-1.5 bg-slate-700 hover:bg-slate-600 rounded-md",
+                            ),
+                            rx.el.button(
+                                rx.icon("download", class_name="h-4 w-4 mr-2"),
+                                "Export as JSON",
+                                on_click=DataState.export_data("json"),
+                                class_name="flex items-center text-sm px-3 py-1.5 bg-slate-700 hover:bg-slate-600 rounded-md",
+                            ),
+                            class_name="flex gap-2",
+                        ),
+                        class_name="flex items-center justify-between py-3 border-b border-slate-800/50",
+                    ),
+                    rx.el.div(
+                        rx.el.p("Clear Watchlist", class_name="font-medium"),
+                        rx.el.button(
+                            "Clear Watchlist",
+                            on_click=DataState.clear_watchlist,
+                            class_name="text-sm px-3 py-1.5 bg-yellow-600/20 text-yellow-300 border border-yellow-500/50 hover:bg-yellow-600/30 rounded-md",
+                        ),
+                        class_name="flex items-center justify-between py-3 border-b border-slate-800/50",
+                    ),
+                    rx.el.div(
+                        rx.el.p("Clear All Stocks", class_name="font-medium"),
+                        rx.el.button(
+                            "Clear All Stocks",
+                            on_click=DataState.set_show_clear_stocks_dialog(True),
+                            class_name="text-sm px-3 py-1.5 bg-red-600/20 text-red-300 border border-red-500/50 hover:bg-red-600/30 rounded-md",
+                        ),
+                        class_name="flex items-center justify-between py-3",
+                    ),
+                ),
+            ),
+            settings_card(
+                rx.el.h3(
+                    "Data Statistics",
+                    class_name="text-lg font-semibold mb-4 border-b border-slate-700 pb-2",
+                ),
+                rx.el.div(
+                    rx.el.div(
+                        rx.el.p(
+                            "Total Records", class_name="font-medium text-slate-400"
+                        ),
+                        rx.el.p(DataState.total_records, class_name="font-semibold"),
+                        class_name="flex items-center justify-between py-2",
+                    ),
+                    rx.el.div(
+                        rx.el.p(
+                            "Last Updated", class_name="font-medium text-slate-400"
+                        ),
+                        rx.el.p(DataState.last_updated, class_name="font-semibold"),
+                        class_name="flex items-center justify-between py-2",
+                    ),
+                ),
+                rx.radix.primitives.dialog.root(
+                    rx.radix.primitives.dialog.trigger(rx.el.div()),
+                    rx.radix.primitives.dialog.content(
+                        rx.radix.primitives.dialog.title(
+                            "Confirm Deletion",
+                            class_name="text-lg font-semibold text-slate-100",
+                        ),
+                        rx.el.p(
+                            "Are you sure you want to delete all stocks? This action is irreversible.",
+                            class_name="text-sm text-slate-400 my-4",
+                        ),
+                        rx.el.div(
+                            rx.radix.primitives.dialog.close(
+                                rx.el.button(
+                                    "Cancel",
+                                    type="button",
+                                    on_click=DataState.set_show_clear_stocks_dialog(
+                                        False
+                                    ),
+                                    class_name="px-4 py-2 bg-slate-700 text-slate-200 rounded-md text-sm font-medium hover:bg-slate-600 transition-colors",
+                                )
+                            ),
+                            rx.el.button(
+                                "Yes, Delete All",
+                                on_click=[
+                                    DataState.clear_all_stocks,
+                                    DataState.set_show_clear_stocks_dialog(False),
+                                ],
+                                class_name="px-4 py-2 bg-red-500 text-white rounded-md text-sm font-medium hover:bg-red-600 transition-colors",
+                            ),
+                            class_name="flex justify-end gap-3 mt-4",
+                        ),
+                        style={
+                            "background": "rgba(21, 27, 40, 0.8)",
+                            "backdrop_filter": "blur(10px)",
+                            "border": "1px solid #2d3748",
+                            "max_width": "450px",
+                            "border_radius": "16px",
+                        },
+                    ),
+                    open=DataState.show_clear_stocks_dialog,
                 ),
             ),
             settings_card(
