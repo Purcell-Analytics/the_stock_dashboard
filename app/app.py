@@ -12,6 +12,9 @@ from app.states.stock_state import StockState
 from app.states.watchlist_state import WatchlistState
 from app.states.settings_state import SettingsState
 from app.states.data_state import DataState
+from app.states.profile_state import ProfileState
+from app.states.notification_state import NotificationState
+from app.states.feedback_state import FeedbackState
 from app.components.metric_cards import metric_card, metric_cards
 
 
@@ -21,7 +24,7 @@ def page_layout(content: rx.Component, title: str) -> rx.Component:
         rx.el.div(
             header(),
             rx.el.main(content, add_stock_dialog(), class_name="p-6"),
-            on_mount=SettingsState.on_load,
+            on_mount=[SettingsState.on_load, ProfileState.on_load_profile],
             class_name="flex-1 flex flex-col h-screen overflow-y-auto",
         ),
         class_name=rx.cond(
@@ -167,10 +170,66 @@ def settings_card(*children, **props) -> rx.Component:
     )
 
 
+def profile_card() -> rx.Component:
+    return settings_card(
+        rx.el.h3(
+            "User Profile",
+            class_name="text-lg font-semibold mb-4 border-b border-slate-700 pb-2",
+        ),
+        rx.el.div(
+            rx.el.div(
+                rx.el.div(
+                    ProfileState.user_initials,
+                    class_name="w-16 h-16 rounded-full bg-cyan-500 flex items-center justify-center text-2xl font-bold text-slate-900",
+                ),
+                rx.cond(
+                    ProfileState.is_editing_name,
+                    rx.el.div(
+                        rx.el.input(
+                            default_value=ProfileState.temp_display_name,
+                            on_change=ProfileState.set_temp_display_name,
+                            class_name="bg-slate-700 border border-slate-600 rounded-md px-3 py-1.5 text-base font-medium text-slate-100 focus:ring-2 focus:ring-cyan-500",
+                        ),
+                        rx.el.div(
+                            rx.el.button(
+                                rx.icon("x", class_name="h-4 w-4"),
+                                on_click=ProfileState.cancel_editing_name,
+                                class_name="p-2 text-slate-400 hover:bg-slate-700 rounded-md",
+                            ),
+                            rx.el.button(
+                                rx.icon("check", class_name="h-4 w-4"),
+                                on_click=ProfileState.save_display_name,
+                                class_name="p-2 text-green-400 hover:bg-slate-700 rounded-md",
+                            ),
+                            class_name="flex items-center gap-1",
+                        ),
+                        class_name="flex items-center gap-3",
+                    ),
+                    rx.el.div(
+                        rx.el.p(
+                            ProfileState.profile.display_name,
+                            class_name="text-xl font-semibold text-slate-100",
+                        ),
+                        rx.el.button(
+                            rx.icon("pencil", class_name="h-4 w-4"),
+                            on_click=ProfileState.start_editing_name,
+                            class_name="p-2 text-slate-400 hover:text-cyan-400 hover:bg-slate-700 rounded-md",
+                        ),
+                        class_name="flex items-center gap-2",
+                    ),
+                ),
+                class_name="flex-1 flex flex-col gap-2",
+            ),
+            class_name="flex items-center gap-6",
+        ),
+    )
+
+
 def settings() -> rx.Component:
     return page_layout(
         rx.el.div(
             rx.el.h2("Settings", class_name="text-2xl font-bold text-slate-100 mb-6"),
+            profile_card(),
             settings_card(
                 rx.el.h3(
                     "User Preferences",
@@ -336,6 +395,91 @@ def settings() -> rx.Component:
                         },
                     ),
                     open=DataState.show_clear_stocks_dialog,
+                ),
+            ),
+            settings_card(
+                rx.el.h3(
+                    "About",
+                    class_name="text-lg font-semibold mb-4 border-b border-slate-700 pb-2",
+                ),
+                rx.el.h3(
+                    "Notification Preferences",
+                    class_name="text-lg font-semibold mb-4 border-b border-slate-700 pb-2",
+                ),
+                rx.el.div(
+                    rx.el.div(
+                        rx.el.label("Price Change Alerts", class_name="font-medium"),
+                        rx.radix.switch(
+                            checked=NotificationState.prefs.price_alerts,
+                            on_change=NotificationState.set_price_alerts,
+                            high_contrast=True,
+                        ),
+                        class_name="flex items-center justify-between py-3 border-b border-slate-800/50",
+                    ),
+                    rx.el.div(
+                        rx.el.label("Alert Threshold (%) ", class_name="font-medium"),
+                        rx.el.input(
+                            default_value=NotificationState.prefs.alert_threshold.to_string(),
+                            on_change=NotificationState.set_alert_threshold,
+                            type="number",
+                            class_name="bg-slate-700 rounded-md px-2 py-1 w-20 text-right",
+                        ),
+                        class_name="flex items-center justify-between py-3 border-b border-slate-800/50",
+                    ),
+                    rx.el.div(
+                        rx.el.label("Daily Summary Email", class_name="font-medium"),
+                        rx.radix.switch(
+                            checked=NotificationState.prefs.daily_summary,
+                            on_change=NotificationState.set_daily_summary,
+                            high_contrast=True,
+                        ),
+                        class_name="flex items-center justify-between py-3 border-b border-slate-800/50",
+                    ),
+                    rx.el.div(
+                        rx.el.label("Desktop Notifications", class_name="font-medium"),
+                        rx.radix.switch(
+                            checked=NotificationState.prefs.desktop_notifications,
+                            on_change=NotificationState.set_desktop_notifications,
+                            high_contrast=True,
+                        ),
+                        class_name="flex items-center justify-between py-3",
+                    ),
+                ),
+            ),
+            settings_card(
+                rx.el.h3(
+                    "Submit Feedback",
+                    class_name="text-lg font-semibold mb-4 border-b border-slate-700 pb-2",
+                ),
+                rx.el.form(
+                    rx.el.select(
+                        rx.el.option("Select Category...", value="", disabled=True),
+                        rx.el.option("Bug Report", value="bug"),
+                        rx.el.option("Feature Request", value="feature"),
+                        rx.el.option("General Feedback", value="general"),
+                        value=FeedbackState.category,
+                        on_change=FeedbackState.set_category,
+                        class_name="w-full bg-slate-700 rounded-md px-2 py-2 mb-3 text-sm",
+                    ),
+                    rx.el.textarea(
+                        on_change=FeedbackState.set_message,
+                        placeholder="Tell us what you think...",
+                        class_name="w-full bg-slate-700 rounded-md px-3 py-2 text-sm h-24 mb-3",
+                        default_value=FeedbackState.message,
+                    ),
+                    rx.el.button(
+                        rx.cond(
+                            FeedbackState.is_submitting,
+                            rx.spinner(class_name="mr-2"),
+                            None,
+                        ),
+                        "Submit Feedback",
+                        type="submit",
+                        disabled=FeedbackState.is_submitting,
+                        class_name="w-full flex items-center justify-center text-sm px-3 py-2 bg-cyan-500 text-slate-900 font-semibold hover:bg-cyan-600 rounded-md transition-colors",
+                    ),
+                    on_submit=FeedbackState.submit_feedback,
+                    width="100%",
                 ),
             ),
             settings_card(

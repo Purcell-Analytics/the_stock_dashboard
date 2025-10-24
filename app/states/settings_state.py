@@ -8,11 +8,13 @@ import logging
 class UserPreferences(BaseModel):
     theme: Literal["light", "dark"] = "dark"
     currency: Literal["USD", "EUR", "GBP"] = "USD"
-    refresh_interval: Literal[30, 60, 300, 0] = 30
+    refresh_interval: int = 30
 
 
 class SettingsState(rx.State):
-    preferences_json: str = rx.LocalStorage(name="user_preferences")
+    preferences_json: str = rx.LocalStorage(
+        UserPreferences().model_dump_json(), name="user_preferences"
+    )
     _preferences: UserPreferences | None = None
     _refresh_task_id: str = ""
 
@@ -64,12 +66,15 @@ class SettingsState(rx.State):
 
     @rx.event
     def set_refresh_interval(self, interval: str):
-        interval_val = int(interval)
-        if interval_val in [30, 60, 300, 0]:
-            new_prefs = self.preferences.model_copy()
-            new_prefs.refresh_interval = interval_val
-            self._update_preferences(new_prefs)
-            return SettingsState.start_refresh_task()
+        try:
+            interval_val = int(interval)
+            if interval_val in [30, 60, 300, 0]:
+                new_prefs = self.preferences.model_copy()
+                new_prefs.refresh_interval = interval_val
+                self._update_preferences(new_prefs)
+                return SettingsState.start_refresh_task()
+        except ValueError as e:
+            logging.exception(f"Invalid refresh interval: {interval}, error: {e}")
 
     @rx.event
     def start_refresh_task(self):
