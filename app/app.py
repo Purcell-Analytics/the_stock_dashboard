@@ -15,6 +15,7 @@ from app.states.data_state import DataState
 from app.states.profile_state import ProfileState
 from app.states.notification_state import NotificationState
 from app.states.feedback_state import FeedbackState
+from app.states.api_state import ApiState
 from app.components.metric_cards import metric_card, metric_cards
 
 
@@ -230,6 +231,44 @@ def settings() -> rx.Component:
         rx.el.div(
             rx.el.h2("Settings", class_name="text-2xl font-bold text-slate-100 mb-6"),
             profile_card(),
+            settings_card(
+                rx.el.h3(
+                    "API Integration",
+                    class_name="text-lg font-semibold mb-4 border-b border-slate-700 pb-2",
+                ),
+                rx.el.div(
+                    rx.el.div(
+                        rx.el.label("Auto-Sync", class_name="font-medium"),
+                        rx.radix.switch(
+                            checked=SettingsState.preferences.auto_sync_enabled,
+                            on_change=SettingsState.set_auto_sync_enabled,
+                            high_contrast=True,
+                        ),
+                        class_name="flex items-center justify-between py-3 border-b border-slate-800/50",
+                    ),
+                    rx.el.div(
+                        rx.el.p("Last Sync", class_name="font-medium text-slate-400"),
+                        rx.el.p(ApiState.last_sync_time, class_name="font-semibold"),
+                        class_name="flex items-center justify-between py-2",
+                    ),
+                    rx.el.div(
+                        rx.el.p(
+                            "Successful Syncs", class_name="font-medium text-slate-400"
+                        ),
+                        rx.el.p(
+                            ApiState.sync_success_count, class_name="font-semibold"
+                        ),
+                        class_name="flex items-center justify-between py-2",
+                    ),
+                    rx.el.div(
+                        rx.el.p(
+                            "Failed Syncs", class_name="font-medium text-slate-400"
+                        ),
+                        rx.el.p(ApiState.sync_error_count, class_name="font-semibold"),
+                        class_name="flex items-center justify-between py-2",
+                    ),
+                ),
+            ),
             settings_card(
                 rx.el.h3(
                     "User Preferences",

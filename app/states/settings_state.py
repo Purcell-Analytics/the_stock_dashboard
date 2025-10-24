@@ -9,6 +9,7 @@ class UserPreferences(BaseModel):
     theme: Literal["light", "dark"] = "dark"
     currency: Literal["USD", "EUR", "GBP"] = "USD"
     refresh_interval: int = 30
+    auto_sync_enabled: bool = True
 
 
 class SettingsState(rx.State):
@@ -77,15 +78,26 @@ class SettingsState(rx.State):
             logging.exception(f"Invalid refresh interval: {interval}, error: {e}")
 
     @rx.event
+    def set_auto_sync_enabled(self, enabled: bool):
+        new_prefs = self.preferences.model_copy()
+        new_prefs.auto_sync_enabled = enabled
+        self._update_preferences(new_prefs)
+        return SettingsState.start_refresh_task()
+
+    @rx.event
     def start_refresh_task(self):
         """Starts or restarts the background data refresh task."""
         from app.states.stock_state import StockState
+        from app.states.api_state import ApiState
 
         if self._refresh_task_id:
             yield rx.call_script(f"clearInterval({self._refresh_task_id})")
         interval = self.preferences.refresh_interval
         if interval > 0:
-            event_trigger = "app.states.stock_state.StockState.fetch_stocks"
+            if self.preferences.auto_sync_enabled:
+                event_trigger = "app.states.api_state.ApiState.sync_all_stocks"
+            else:
+                event_trigger = "app.states.stock_state.StockState.fetch_stocks"
             code = f"setInterval(() => _reflex.callEvent('{event_trigger}', {{}}), {interval * 1000})"
             yield rx.call_script(code, callback=SettingsState.set_refresh_task_id)
         else:
