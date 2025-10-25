@@ -8,7 +8,7 @@ def metric_card(
 ) -> rx.Component:
     return rx.el.div(
         rx.el.div(
-            rx.icon(icon_name, class_name=f"h-6 w-6 {icon_color}"),
+            rx.icon(icon_name, class_name=icon_color),
             class_name="p-3 bg-slate-800 rounded-lg",
         ),
         rx.el.div(
@@ -16,7 +16,8 @@ def metric_card(
             rx.el.p(value, class_name="text-2xl font-semibold text-slate-100"),
             class_name="flex-1",
         ),
-        class_name=f"flex items-center gap-4 p-5 bg-[#151b28] rounded-lg border-l-4 {border_color} shadow-sm hover:shadow-lg hover:shadow-cyan-500/10 transition-shadow",
+        class_name="flex items-center gap-4 p-5 bg-[#151b28] rounded-lg border-l-4 shadow-sm hover:shadow-lg hover:shadow-cyan-500/10 transition-shadow",
+        custom_attrs={"class": border_color},
     )
 
 
@@ -53,7 +54,7 @@ def biggest_gainer_card() -> rx.Component:
                 "Biggest Gainer",
                 "N/A",
                 "trending-up",
-                "text-slate-500",
+                "h-6 w-6 text-slate-500",
                 "border-slate-700",
             ),
         )
@@ -66,21 +67,21 @@ def metric_cards() -> rx.Component:
             "Total Stocks",
             StockState.total_stocks,
             "binary",
-            "text-cyan-400",
+            "h-6 w-6 text-cyan-400",
             "border-cyan-500",
         ),
         metric_card(
             "Average Price",
             f"{SettingsState.currency_symbol}{StockState.average_price.to_string()}",
             "dollar-sign",
-            "text-pink-400",
+            "h-6 w-6 text-pink-400",
             "border-pink-500",
         ),
         metric_card(
             "Total Volume",
             StockState.total_volume.to_string(),
             "bar-chart-3",
-            "text-purple-400",
+            "h-6 w-6 text-purple-400",
             "border-purple-500",
         ),
         biggest_gainer_card(),

@@ -49,10 +49,15 @@ def stock_row(stock: Stock) -> rx.Component:
                     ),
                     class_name="text-slate-500 hover:text-yellow-400 p-2 rounded-md",
                 ),
+                rx.el.a(
+                    rx.icon("bar-chart-2", class_name="h-4 w-4"),
+                    href=f"/stock/{stock['symbol']}",
+                    class_name="text-slate-500 hover:text-cyan-400 p-2 rounded-md",
+                ),
                 rx.el.button(
                     rx.icon("trash-2", class_name="h-4 w-4"),
                     on_click=lambda: StockState.delete_stock(stock["id"]),
-                    class_name="text-slate-500 hover:text-cyan-400 p-2 rounded-md",
+                    class_name="text-slate-500 hover:text-red-400 p-2 rounded-md",
                 ),
                 class_name="flex justify-end",
             ),

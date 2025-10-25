@@ -118,8 +118,8 @@ class StockState(rx.State):
             if not all([symbol, name]):
                 async with self:
                     self.error_message = "Symbol and Name are required."
-                    yield rx.toast(self.error_message, duration=4000)
                     self.is_loading = False
+                yield rx.toast("Symbol and Name are required.", duration=4000)
                 return
             client = get_supabase_client()
             if not client:

@@ -3,10 +3,10 @@ from app.states.stock_state import StockState
 from app.states.api_state import ApiState
 
 
-def header() -> rx.Component:
+def header(title: str) -> rx.Component:
     return rx.el.header(
         rx.el.div(
-            rx.el.h1("Dashboard", class_name="text-2xl font-bold text-slate-100"),
+            rx.el.h1(title, class_name="text-2xl font-bold text-slate-100"),
             rx.el.div(
                 rx.el.div(
                     rx.icon("search", class_name="h-5 w-5 text-slate-500"),

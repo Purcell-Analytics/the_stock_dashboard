@@ -3,3 +3,5 @@ reflex==0.8.15a1
 supabase
 yfinance
 alpha_vantage
+alpha-vantage
+pandas

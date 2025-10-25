@@ -16,18 +16,21 @@ from app.states.profile_state import ProfileState
 from app.states.notification_state import NotificationState
 from app.states.feedback_state import FeedbackState
 from app.states.api_state import ApiState
+from app.states.chart_state import ChartState
 from app.components.metric_cards import metric_card, metric_cards
+from app.components.stock_chart import stock_chart_component
+from app.states.chart_state import ChartState
 
 
 def page_layout(content: rx.Component, title: str) -> rx.Component:
     return rx.el.div(
         sidebar(),
         rx.el.div(
-            header(),
+            header(title=title),
             rx.el.main(content, add_stock_dialog(), class_name="p-6"),
-            on_mount=[SettingsState.on_load, ProfileState.on_load_profile],
             class_name="flex-1 flex flex-col h-screen overflow-y-auto",
         ),
+        on_mount=[SettingsState.on_load, ProfileState.on_load_profile],
         class_name=rx.cond(
             SettingsState.preferences.theme == "dark",
             "flex bg-[#0a0f1a] text-slate-200 font-['Inter']",
@@ -74,6 +77,7 @@ def index() -> rx.Component:
                 ),
                 class_name="mt-6",
             ),
+            on_mount=StockState.fetch_stocks,
         ),
         title="Dashboard",
     )
@@ -533,6 +537,25 @@ def settings() -> rx.Component:
     )
 
 
+def stock_detail_page() -> rx.Component:
+    return page_layout(
+        rx.el.div(
+            rx.el.a(
+                rx.icon("arrow-left", class_name="h-4 w-4 mr-2"),
+                "Back to Dashboard",
+                href="/",
+                class_name="flex items-center text-sm text-slate-400 hover:text-cyan-400 mb-6",
+            ),
+            stock_chart_component(),
+        ),
+        title=rx.cond(
+            ChartState.selected_symbol,
+            f"Stock Detail - {ChartState.selected_symbol}",
+            "Stock Detail",
+        ),
+    )
+
+
 app = rx.App(
     theme=rx.theme(appearance="light"),
     head_components=[
@@ -547,3 +570,6 @@ app = rx.App(
 app.add_page(index)
 app.add_page(watchlist)
 app.add_page(settings)
+app.add_page(
+    stock_detail_page, route="/stock/[symbol]", on_load=ChartState.on_load_chart
+)
