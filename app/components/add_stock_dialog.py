@@ -55,9 +55,14 @@ def add_stock_dialog() -> rx.Component:
                         )
                     ),
                     rx.el.button(
-                        "Add Stock",
+                        rx.cond(
+                            StockState.is_adding,
+                            rx.spinner(class_name="h-4 w-4"),
+                            "Add Stock",
+                        ),
                         type="submit",
-                        class_name="px-4 py-2 bg-cyan-500 text-slate-900 rounded-md text-sm font-medium hover:bg-cyan-600 transition-colors",
+                        disabled=StockState.is_adding,
+                        class_name="px-4 py-2 bg-cyan-500 text-slate-900 rounded-md text-sm font-medium hover:bg-cyan-600 transition-colors flex items-center justify-center w-28 disabled:opacity-50",
                     ),
                     class_name="flex justify-end gap-3 mt-4",
                 ),

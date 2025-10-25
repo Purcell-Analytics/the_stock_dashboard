@@ -59,7 +59,7 @@ class DataState(StockState):
                 "is_watchlist", False
             ).execute()
             yield rx.toast("Watchlist cleared successfully.", duration=3000)
-            yield StockState.fetch_stocks
+            yield StockState.fetch_stocks(True)
         except Exception as e:
             logging.exception(f"Error clearing watchlist: {e}")
             async with self:
@@ -80,7 +80,7 @@ class DataState(StockState):
                 return
             client.table("stocks").delete().neq("id", -1).execute()
             yield rx.toast("All stocks have been deleted.", duration=3000)
-            yield StockState.fetch_stocks
+            yield StockState.fetch_stocks(True)
         except Exception as e:
             logging.exception(f"Error deleting all stocks: {e}")
             async with self:

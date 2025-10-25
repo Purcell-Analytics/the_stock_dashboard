@@ -3,6 +3,7 @@ from typing import Literal
 from pydantic import BaseModel
 import json
 import logging
+import uuid
 
 
 class UserPreferences(BaseModel):
@@ -91,15 +92,18 @@ class SettingsState(rx.State):
         from app.states.api_state import ApiState
 
         if self._refresh_task_id:
-            yield rx.call_script(f"clearInterval({self._refresh_task_id})")
+            yield rx.call_script(f"clearInterval(window.{self._refresh_task_id})")
         interval = self.preferences.refresh_interval
         if interval > 0:
+            task_id = f"stock_refresh_task_{str(uuid.uuid4()).replace('-', '')}"
             if self.preferences.auto_sync_enabled:
-                event_trigger = "app.states.api_state.ApiState.sync_all_stocks"
+                event_trigger = f"app.states.api_state.ApiState.sync_all_stocks"
             else:
-                event_trigger = "app.states.stock_state.StockState.fetch_stocks"
-            code = f"setInterval(() => _reflex.callEvent('{event_trigger}', {{}}), {interval * 1000})"
-            yield rx.call_script(code, callback=SettingsState.set_refresh_task_id)
+                event_trigger = f"app.states.stock_state.StockState.fetch_stocks(true)"
+            code = f"window.{task_id} = setInterval(() => _reflex.callEvent('{event_trigger}', {{}}), {interval * 1000})"
+            yield rx.call_script(
+                code, callback=lambda: SettingsState.set_refresh_task_id(task_id)
+            )
         else:
             self._refresh_task_id = ""
 

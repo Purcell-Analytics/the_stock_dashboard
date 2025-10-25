@@ -58,6 +58,7 @@ def stock_row(stock: Stock) -> rx.Component:
                     rx.icon("trash-2", class_name="h-4 w-4"),
                     on_click=lambda: StockState.delete_stock(stock["id"]),
                     class_name="text-slate-500 hover:text-red-400 p-2 rounded-md",
+                    disabled=StockState.is_deleting,
                 ),
                 class_name="flex justify-end",
             ),

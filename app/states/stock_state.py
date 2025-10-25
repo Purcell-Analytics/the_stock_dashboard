@@ -15,9 +15,14 @@ class Stock(TypedDict):
     is_watchlist: bool
 
 
+from datetime import datetime, timezone, timedelta
+
+
 class StockState(rx.State):
     stocks: list[Stock] = []
     is_loading: bool = True
+    is_adding: bool = False
+    is_deleting: bool = False
     error_message: str = ""
     form_symbol: str = ""
     form_name: str = ""
@@ -26,6 +31,7 @@ class StockState(rx.State):
     form_volume: str = ""
     show_add_stock_dialog: bool = False
     search_query: str = ""
+    last_fetch_time: datetime | None = None
 
     @rx.var
     def filtered_stocks(self) -> list[Stock]:
@@ -74,8 +80,15 @@ class StockState(rx.State):
         self.error_message = ""
 
     @rx.event(background=True)
-    async def fetch_stocks(self):
+    async def fetch_stocks(self, force: bool = False):
         async with self:
+            now = datetime.now(timezone.utc)
+            if (
+                not force
+                and self.last_fetch_time
+                and (now - self.last_fetch_time < timedelta(seconds=10))
+            ):
+                return
             self.is_loading = True
             self.error_message = ""
         try:
@@ -83,7 +96,6 @@ class StockState(rx.State):
             if not client:
                 async with self:
                     self.error_message = "Supabase client not available."
-                    self.is_loading = False
                 return
             response = client.table("stocks").select("*").order("symbol").execute()
             async with self:
@@ -91,13 +103,15 @@ class StockState(rx.State):
                     self.stocks = response.data
                 else:
                     self.stocks = []
-                self.is_loading = False
+                self.last_fetch_time = now
         except Exception as e:
             logging.exception(f"Error fetching stocks: {e}")
             async with self:
                 self.error_message = f"Failed to fetch stocks: {e}"
-                self.is_loading = False
                 yield rx.toast(self.error_message, duration=5000)
+        finally:
+            async with self:
+                self.is_loading = False
 
     def _safe_convert(self, value, convert_type):
         """Safely converts a value to float or int, handling empty strings."""
@@ -108,7 +122,7 @@ class StockState(rx.State):
     @rx.event(background=True)
     async def add_stock(self, form_data: dict):
         async with self:
-            self.is_loading = True
+            self.is_adding = True
         try:
             symbol = form_data.get("symbol", "").upper()
             name = form_data.get("name", "")
@@ -116,16 +130,17 @@ class StockState(rx.State):
             change = self._safe_convert(form_data.get("change", "0"), float)
             volume = self._safe_convert(form_data.get("volume", "0"), int)
             if not all([symbol, name]):
+                yield rx.toast("Symbol and Name are required.", duration=4000)
                 async with self:
                     self.error_message = "Symbol and Name are required."
-                    self.is_loading = False
-                yield rx.toast("Symbol and Name are required.", duration=4000)
+                    self.is_adding = False
                 return
             client = get_supabase_client()
             if not client:
+                yield rx.toast("Database client not available.", duration=5000)
                 async with self:
                     self.error_message = "Supabase client not available."
-                    self.is_loading = False
+                    self.is_adding = False
                 return
             client.table("stocks").insert(
                 {
@@ -139,53 +154,54 @@ class StockState(rx.State):
             async with self:
                 self.show_add_stock_dialog = False
             yield rx.toast(f"Successfully added {symbol}.", duration=3000)
-            yield StockState.fetch_stocks
+            yield StockState.fetch_stocks(True)
         except Exception as e:
             logging.exception(f"Error adding stock: {e}")
             async with self:
                 self.error_message = f"Failed to add stock: {e}"
-                self.is_loading = False
                 yield rx.toast(self.error_message, duration=5000)
+        finally:
+            async with self:
+                self.is_adding = False
 
     @rx.event(background=True)
     async def delete_stock(self, stock_id: int):
         async with self:
-            self.is_loading = True
+            self.is_deleting = True
         try:
             client = get_supabase_client()
             if not client:
+                yield rx.toast("Database client not available.", duration=5000)
                 async with self:
                     self.error_message = "Supabase client not available."
-                    self.is_loading = False
                 return
             client.table("stocks").delete().eq("id", stock_id).execute()
             yield rx.toast("Stock deleted successfully.", duration=3000)
-            yield StockState.fetch_stocks
+            yield StockState.fetch_stocks(True)
         except Exception as e:
             logging.exception(f"Error deleting stock: {e}")
             async with self:
                 self.error_message = f"Failed to delete stock: {e}"
-                self.is_loading = False
                 yield rx.toast(self.error_message, duration=5000)
+        finally:
+            async with self:
+                self.is_deleting = False
 
     @rx.event(background=True)
     async def toggle_watchlist(self, stock_id: int, is_watchlist: bool):
-        async with self:
-            self.is_loading = True
         try:
             client = get_supabase_client()
             if not client:
+                yield rx.toast("Database client not available.", duration=5000)
                 async with self:
                     self.error_message = "Supabase client not available."
-                    self.is_loading = False
                 return
             client.table("stocks").update({"is_watchlist": not is_watchlist}).eq(
                 "id", stock_id
             ).execute()
-            yield StockState.fetch_stocks
+            yield StockState.fetch_stocks(True)
         except Exception as e:
             logging.exception(f"Error updating watchlist: {e}")
             async with self:
                 self.error_message = f"Failed to update watchlist: {e}"
-                self.is_loading = False
                 yield rx.toast(self.error_message, duration=5000)

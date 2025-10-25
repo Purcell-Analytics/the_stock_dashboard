@@ -8,7 +8,7 @@ from datetime import datetime, timezone
 
 class ApiState(StockState):
     is_syncing: bool = False
-    last_sync_time: str = rx.LocalStorage("", name="last_sync_time")
+    last_sync_time: str = rx.LocalStorage("Never", name="last_sync_time")
     sync_success_count: int = 0
     sync_error_count: int = 0
 
@@ -65,12 +65,14 @@ class ApiState(StockState):
                     async with self:
                         self.sync_error_count += 1
             async with self:
-                self.last_sync_time = datetime.now(timezone.utc).isoformat()
+                self.last_sync_time = datetime.now(timezone.utc).strftime(
+                    "%Y-%m-%d %H:%M:%S UTC"
+                )
             yield rx.toast(
                 f"Sync complete: {self.sync_success_count} updated, {self.sync_error_count} failed.",
                 duration=3000,
             )
-            yield StockState.fetch_stocks
+            yield StockState.fetch_stocks(True)
         except Exception as e:
             logging.exception(f"Error syncing all stocks: {e}")
             yield rx.toast(f"API Sync Error: {str(e)}", duration=5000)

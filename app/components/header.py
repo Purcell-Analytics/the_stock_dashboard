@@ -12,7 +12,7 @@ def header(title: str) -> rx.Component:
                     rx.icon("search", class_name="h-5 w-5 text-slate-500"),
                     rx.el.input(
                         placeholder="Search stocks...",
-                        on_change=StockState.set_search_query,
+                        on_change=StockState.set_search_query.debounce(300),
                         class_name="bg-transparent focus:outline-none w-full text-sm font-medium text-slate-100 placeholder-slate-500",
                     ),
                     class_name="flex items-center gap-3 bg-slate-800/50 border border-slate-700 rounded-lg px-3 py-2 w-64",
