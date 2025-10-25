@@ -28,38 +28,42 @@ class ApiState(StockState):
         symbols = [stock["symbol"] for stock in all_stocks]
         try:
             data = yf.download(tickers=symbols, period="1d", group_by="ticker")
-            updates = []
+            client = get_supabase_client()
+            if not client:
+                async with self:
+                    self.is_syncing = False
+                yield rx.toast("Database connection not available.", duration=5000)
+                return
             for stock in all_stocks:
                 symbol = stock["symbol"]
                 try:
                     stock_data = data[symbol]
-                    if not stock_data.empty:
+                    if stock_data is not None and (not stock_data.empty):
                         latest = stock_data.iloc[-1]
                         price = float(latest["Close"])
                         prev_close = float(latest["Open"])
                         change = price - prev_close
                         volume = int(latest["Volume"])
-                        updates.append(
-                            {
-                                "id": stock["id"],
-                                "price": round(price, 2),
-                                "change": round(change, 2),
-                                "volume": volume,
-                            }
-                        )
+                        update_payload = {
+                            "price": round(price, 2),
+                            "change": round(change, 2),
+                            "volume": volume,
+                        }
+                        client.table("stocks").update(update_payload).eq(
+                            "id", stock["id"]
+                        ).execute()
                         async with self:
                             self.sync_success_count += 1
                     else:
+                        logging.warning(f"No data returned for symbol {symbol}.")
                         async with self:
                             self.sync_error_count += 1
                 except Exception as e:
-                    logging.exception(f"Error processing stock {symbol}: {e}")
+                    logging.exception(
+                        f"Error processing or updating stock {symbol}: {e}"
+                    )
                     async with self:
                         self.sync_error_count += 1
-            if updates:
-                client = get_supabase_client()
-                if client:
-                    client.table("stocks").upsert(updates).execute()
             async with self:
                 self.last_sync_time = datetime.now(timezone.utc).isoformat()
             yield rx.toast(
@@ -69,7 +73,7 @@ class ApiState(StockState):
             yield StockState.fetch_stocks
         except Exception as e:
             logging.exception(f"Error syncing all stocks: {e}")
-            yield rx.toast(f"API Sync Error: {e}", duration=5000)
+            yield rx.toast(f"API Sync Error: {str(e)}", duration=5000)
         finally:
             async with self:
                 self.is_syncing = False
