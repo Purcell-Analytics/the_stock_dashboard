@@ -8,6 +8,7 @@ from app.components.stock_table import (
     stock_row,
 )
 from app.components.add_stock_dialog import add_stock_dialog
+from app.components.bulk_import_dialog import bulk_import_dialog
 from app.states.stock_state import StockState
 from app.states.watchlist_state import WatchlistState
 from app.states.settings_state import SettingsState
@@ -17,6 +18,7 @@ from app.states.notification_state import NotificationState
 from app.states.feedback_state import FeedbackState
 from app.states.api_state import ApiState
 from app.states.chart_state import ChartState
+from app.states.import_state import ImportState
 from app.components.metric_cards import metric_card, metric_cards
 from app.components.stock_chart import stock_chart_component
 from app.states.chart_state import ChartState
@@ -27,7 +29,9 @@ def page_layout(content: rx.Component, title: str) -> rx.Component:
         sidebar(),
         rx.el.div(
             header(title=title),
-            rx.el.main(content, add_stock_dialog(), class_name="p-6"),
+            rx.el.main(
+                content, add_stock_dialog(), bulk_import_dialog(), class_name="p-6"
+            ),
             class_name="flex-1 flex flex-col h-screen overflow-y-auto",
         ),
         on_mount=[SettingsState.on_load, ProfileState.on_load_profile],

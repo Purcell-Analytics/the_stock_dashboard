@@ -1,6 +1,7 @@
 import reflex as rx
 from app.states.stock_state import StockState
 from app.states.api_state import ApiState
+from app.states.import_state import ImportState
 
 
 def header(title: str) -> rx.Component:
@@ -34,6 +35,12 @@ def header(title: str) -> rx.Component:
                         class_name="text-xs text-slate-500 mt-1",
                     ),
                     class_name="flex flex-col items-center",
+                ),
+                rx.el.button(
+                    rx.icon("cloud_upload", class_name="mr-2 h-4 w-4"),
+                    "Bulk Import",
+                    on_click=ImportState.toggle_dialog,
+                    class_name="flex items-center bg-slate-700 text-slate-200 px-3 py-1.5 rounded-lg text-xs font-semibold hover:bg-slate-600 transition-colors duration-200",
                 ),
                 rx.el.button(
                     rx.icon("plus", class_name="mr-2 h-4 w-4"),

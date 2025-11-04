@@ -5,3 +5,4 @@ yfinance
 alpha_vantage
 alpha-vantage
 pandas
+httpx
