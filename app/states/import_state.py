@@ -47,7 +47,11 @@ class ImportState(rx.State):
                 stocks = []
                 for line in lines[1:]:
                     parts = line.split(",")
-                    if len(parts) >= 3 and parts[2].lower() == "stock":
+                    if (
+                        len(parts) >= 7
+                        and parts[3].lower() == "stock"
+                        and (parts[6].lower() == "active")
+                    ):
                         stocks.append(
                             {"symbol": parts[0], "name": parts[1], "exchange": parts[2]}
                         )
